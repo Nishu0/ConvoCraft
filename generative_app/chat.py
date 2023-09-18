@@ -3,6 +3,7 @@ from langchain.chains import LLMChain
 import streamlit as st
 from llm import parse
 
+avatar = 'https://avataaars.io/?avatarStyle=Transparent&topType=ShortHairShortCurly&accessoriesType=Blank&hairColor=BrownDark&facialHairType=Blank&clotheType=BlazerShirt&eyeType=Default&eyebrowType=RaisedExcited&mouthType=Twinkle&skinColor=Tanned'
 
 def generate_app(code:str, python_script_path: str):
     if not code:
@@ -11,19 +12,14 @@ def generate_app(code:str, python_script_path: str):
         app_file.write(code)
 
 def reset(python_script_path: str):
-    st.session_state.messages.clear()
+    if "messages" in st.session_state:
+        st.session_state.messages.clear()
     st.session_state["messages"] = [
-            {"role": "assistant", "content": "Hello! I'm a chatbot designed to help you with Streamlit App Coding."},
+            {"role": "assistant", "content": "Hello! I'm 🤖ChatbotX designed to help you create a Streamlit App."},
             {"role": "assistant", "content": "here are the few commands to control me:\n\n/undo: undo the last instruction\n\n/reset: reset the app and the conversation\n\n/save: save the streamlit script in an independant app"},
             {"role": "assistant", "content": "I will generate the Streamlit App in the 🤖GeneratedApp page (see sidebar)"},
         ]
-    generate_app("""
-                 import streamlit as st
-                 import pandas as pd
-                 import numpy as np
-                 import plotly.figure_factory as ff
-                 import pydeck as pdk
-                 import altair as alt""", python_script_path)
+    generate_app("", python_script_path)
 
 def setup(llm: LLMChain, python_script_path: str):
     if "generated" not in st.session_state:
@@ -38,12 +34,7 @@ def setup(llm: LLMChain, python_script_path: str):
         st.session_state["stored_session"] = []
 
     if "messages" not in st.session_state:
-        st.session_state["messages"] = [
-            {"role": "assistant", "content": "Hello! I'm a chatbot designed to help you with Streamlit App Coding."},
-            {"role": "assistant", "content": "here are the few commands to control me:\n\n/undo: undo the last instruction\n\n/reset: reset the app and the conversation\n\n/save: save the streamlit script in an independant app"},
-            {"role": "assistant", "content": "I will generate the Streamlit App in the 🤖GeneratedApp page (see sidebar)"},
-        ]
-        generate_app("import streamlit as st", python_script_path)
+        reset(python_script_path)
 
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
@@ -52,32 +43,36 @@ def setup(llm: LLMChain, python_script_path: str):
     instruction = st.chat_input("Tell him what to do")
     if instruction:
         st.session_state.messages.append({"role": "user", "content": instruction})
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar=avatar):
             st.markdown(instruction)
 
         # Process the instruction if the user did not enter a specific command
         check_command = check_commands(instruction, python_script_path)
-        print(check_command)
         if not check_command[0] or check_command[1]:
             if check_command[1]:
                 # If an error must be displayed
-                with st.chat_message("assistant"):
+                with st.chat_message("assistant", avatar='🤖'):
                     message_placeholder = st.empty()
-                    response = "Error: " + check_command[1]
+                    response = check_command[1]
                     message_placeholder.markdown(response)
                 st.session_state.messages.append({"role": "assistant", "content": response})
             else:
-                with st.chat_message("assistant"):
+                with st.chat_message("assistant", avatar='🤖'):
                     message_placeholder = st.empty()
                     with message_placeholder:
                         message_placeholder.write("⌛Processing... do not leave this page until I respond.")
                         st.session_state.last_code = open(python_script_path).read()
                         full_response_raw = llm.predict(question=instruction, python_code=st.session_state.last_code)
-                        code = parse(full_response_raw)[0]
-                        generate_app(code, python_script_path)
-                        message_placeholder = st.empty()
-                        message_placeholder.markdown(full_response_raw)
-                st.session_state.messages.append({"role": "assistant", "content": full_response_raw})
+                        code, explanation = parse(full_response_raw)
+                        message = ""
+                        if code:
+                            generate_app(code, python_script_path)
+                            message = "\n".join([f"```python\n{code}\n```", explanation])
+                            message_placeholder.markdown(message)
+                        else:
+                            message = explanation
+                            message_placeholder.markdown(message)
+                st.session_state.messages.append({"role": "assistant", "content": message})
 
 def check_commands(instruction, python_script_path):
     if "/undo" in instruction:
@@ -85,11 +80,11 @@ def check_commands(instruction, python_script_path):
             return False, "Nothing to undo"
         else:
             generate_app(st.session_state.last_code, python_script_path)
-            return True, "Code resetted"
+            return True, "Code reverted"
         return True, None
     if "/reset" in instruction:
         reset(python_script_path)
-        return True, None
+        return True, "Code resetted"
     if "/save" in instruction:
         print("save")
         return True, None
