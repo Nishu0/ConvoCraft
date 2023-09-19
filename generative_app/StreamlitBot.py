@@ -10,14 +10,14 @@ warnings.filterwarnings("ignore")
 
 
 st.set_page_config(
-    page_title="ChatbotX",
+    page_title="ConvoCraft",
     page_icon="🤖",
     layout="centered",
     initial_sidebar_state=sidebar.sidebar_init_state,
     menu_items={
         "Report a bug": "https://github.com/Nishu0/ConvoCraft/issues",
         "About": """
-            # ChatbotX
+            # ConvoCraft
             Transform conversations into stunning web apps. Dynamic code generation + intuitive interface. Unleash your creativity effortlessly. Use the power of GPT OpenAI LLM and Langchain.
 
             Go to the GitHub repo to learn more about the project. https://github.com/Nishu0/ConvoCraft
