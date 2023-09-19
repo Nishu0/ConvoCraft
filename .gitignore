@@ -1,5 +1,9 @@
-# Byte-compiled / optimized / DLL files
 .streamlit/secrets.toml
+sandbox/app.py
+.doc_db
+generative_app/generated/**/*
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
