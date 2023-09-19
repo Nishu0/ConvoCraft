@@ -1,7 +1,10 @@
 .streamlit/secrets.toml
-sandbox/app.py
 .doc_db
-generative_app/generated/**/*
+generative_app/sandboxes/**/*
+!generative_app/sandboxes/__init__.py
+.streamlit/docker_secrets.toml
+.streamlit/secrets_cloud.toml
+.config
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -125,6 +128,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+*.env
 .env
 .venv
 env/

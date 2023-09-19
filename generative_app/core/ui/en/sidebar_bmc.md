@@ -1,0 +1,1 @@
+<p style='text-align:center'>Give a Star <a href="https://github.com/Nishu0/ConvoCraft" target="_blank">here</a> to support the project</p>
